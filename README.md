@@ -1,2 +1,2 @@
 # Deep Learning
-画像認識
+画像認証
