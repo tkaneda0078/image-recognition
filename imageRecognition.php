@@ -7,11 +7,11 @@ try {
   $dotenv = new Dotenv\Dotenv(__DIR__);
   $dotenv->load();
 
-  $PredictionKey = getenv('PredictionKey');
+  $predictionKey = getenv('PredictionKey');
   $iterationId = getenv('iterationId');
 
   $headers = [
-      'Prediction-Key' => $PredictionKey,
+      'Prediction-Key' => $predictionKey,
       'Content-Type'   => 'application/json'
   ];
 
