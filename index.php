@@ -21,7 +21,7 @@
   <h3>画像認証</h3>
   <p class="help-block">※画像をアップロードして下さい(最大2MB、拡張子：jpgのみ)</p>
   <form class="form-group" name="form1" method="post" action="imageRecognition.php" enctype="multipart/form-data">
-    <input type="file" id="files" name="files[]"><br>
+    <input type="file" id="files" name="files"><br>
     <input type="submit" class="btn btn-info btn-lg btn-secondary" value="判定実施">
     <output id="list"></output>
     <script>
