@@ -3,9 +3,6 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once 'HTTP/Request2.php';
 
-$dotenv = new Dotenv\Dotenv(__DIR__);
-$dotenv->load();
-
 try {
   $uploadDir = __DIR__ . '/uploadFile/';
   $tmpFile = $_FILES['files']['tmp_name'];
@@ -17,6 +14,9 @@ try {
       throw new Exception();
     }
   }
+
+  $dotenv = new Dotenv\Dotenv(__DIR__);
+  $dotenv->load();
 
   $predictionKey = getenv('PredictionKey');
   $iterationId = getenv('iterationId');
