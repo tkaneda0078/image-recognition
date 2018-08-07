@@ -35,6 +35,16 @@ try {
   $request->addUpload('files', $uploadFile, $fileName, $fileType);
 
   $response = $request->send();
+
+  $data = json_decode($response->getBody(), true);
+  // tag毎のデータを格納
+  $data = array_column($data['predictions'], 'probability', 'tagName');
+
+  foreach ($data as $key => $value) {
+    // 確率
+    $probability = floor($value * 10000) / 100;
+    $data[$key] = $probability . '%';
+  }
 } catch (Exception $e) {
   echo $e->getMessage();
 }
