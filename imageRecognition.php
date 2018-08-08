@@ -3,50 +3,100 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once 'HTTP/Request2.php';
 
-try {
-  $uploadDir = __DIR__ . '/uploadFile/';
-  $tmpFile = $_FILES['files']['tmp_name'];
-  if (is_uploaded_file($tmpFile)) {
-    $fileName = basename($_FILES['files']['name']);
-    $fileType = $_FILES['files']['type'];
-    $uploadFile = $uploadDir . $fileName;
-    if (!move_uploaded_file($tmpFile, $uploadFile)) {
-      throw new Exception();
+/**
+ * 画像認識
+ * Class imageRecognition
+ */
+class imageRecognition
+{
+  /**
+   * @var \Dotenv\Dotenv
+   */
+  private $dotenv;
+
+  /**
+   * @var HTTP_Request2
+   */
+  private $request;
+
+  /**
+   * prediction key
+   */
+  private $predictionKey;
+
+  /**
+   * iteration id
+   */
+  private $iterationId;
+
+
+  public function __construct()
+  {
+    $this->request = new HTTP_Request2();
+    $this->dotenv = new Dotenv\Dotenv(__DIR__);
+    $this->dotenv->load();
+    $this->predictionKey = getenv('PredictionKey');
+    $this->iterationId = getenv('iterationId');
+  }
+
+  /**
+   * 認識判定
+   */
+  public function determineRecognition()
+  {
+    try {
+      $uploadDir = __DIR__ . '/uploadFile/';
+      $tmpFile = $_FILES['files']['tmp_name'];
+      if (!is_uploaded_file($tmpFile)) {
+        throw new Exception();
+      }
+
+      $fileName = basename($_FILES['files']['name']);
+      $fileType = $_FILES['files']['type'];
+      $uploadFile = $uploadDir . $fileName;
+      if (!move_uploaded_file($tmpFile, $uploadFile)) {
+        throw new Exception();
+      }
+
+      $headers = [
+          'Prediction-Key' => $this->predictionKey,
+          'Content-Type'   => 'multipart/form-data'
+      ];
+
+      $url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d/image?iterationId={$this->iterationId}";
+
+      $this->request->setHeader($headers);
+      $this->request->setUrl($url);
+      $this->request->setMethod(HTTP_Request2::METHOD_POST);
+      $this->request->addUpload('files', $uploadFile, $fileName, $fileType);
+
+      $response = $this->request->send();
+      $data = json_decode($response->getBody(), true);
+
+      return $this->formatData($data);
+
+    } catch (Exception $e) {
+      echo $e->getMessage();
     }
   }
 
-  $dotenv = new Dotenv\Dotenv(__DIR__);
-  $dotenv->load();
+  /**
+   * データを整形する
+   */
+  private function formatData($data)
+  {
+    // tag毎のデータを格納
+    $tagsData = array_column($data['predictions'], 'probability', 'tagName');
 
-  $predictionKey = getenv('PredictionKey');
-  $iterationId = getenv('iterationId');
+    foreach ($tagsData as $key => $value) {
+      // 確率
+      $probability = floor($value * 10000) / 100;
+      $tagsData[$key] = $probability . '%';
+    }
 
-  $headers = [
-      'Prediction-Key' => $predictionKey,
-      'Content-Type'   => 'multipart/form-data'
-  ];
-
-  $url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d/image?iterationId={$iterationId}";
-
-  $request = new HTTP_Request2();
-  $request->setHeader($headers);
-  $request->setUrl($url);
-  $request->setMethod(HTTP_Request2::METHOD_POST);
-  $request->addUpload('files', $uploadFile, $fileName, $fileType);
-
-  $response = $request->send();
-
-  $data = json_decode($response->getBody(), true);
-  // tag毎のデータを格納
-  $data = array_column($data['predictions'], 'probability', 'tagName');
-
-  foreach ($data as $key => $value) {
-    // 確率
-    $probability = floor($value * 10000) / 100;
-    $data[$key] = $probability . '%';
+    return $tagsData;
   }
-} catch (Exception $e) {
-  echo $e->getMessage();
+
 }
 
 ?>
