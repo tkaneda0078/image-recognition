@@ -1,2 +1,2 @@
 # Deep Learning
-画像認証
+Custom Vision Service 画像認証
