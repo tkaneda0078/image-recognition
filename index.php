@@ -1,8 +1,20 @@
 <?php
 
+require_once __DIR__ . '/Upload/File.php';
 require_once 'imageRecognition.php';
 
+use Upload\File;
+
 if (isset($_POST['submit'])) {
+  $file = new File('files', __DIR__ . '/Upload/Files/');
+  
+  // 画像認識対象データ
+  $data = [
+    'localName'  => $file->getLocalName(),
+    'fileName'   => $file->getName(),
+    'mimeType'   => $file->getMimeType()
+  ];
+
   $imageRecognition = new imageRecognition();
   // 画像認識判定
   $result = $imageRecognition->determineRecognition();

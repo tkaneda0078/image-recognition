@@ -45,19 +45,6 @@ class imageRecognition
   public function determineRecognition()
   {
     try {
-      $uploadDir = __DIR__ . '/uploadFile/';
-      $tmpFile = $_FILES['files']['tmp_name'];
-      if (!is_uploaded_file($tmpFile)) {
-        throw new Exception();
-      }
-
-      $fileName = basename($_FILES['files']['name']);
-      $fileType = $_FILES['files']['type'];
-      $uploadFile = $uploadDir . $fileName;
-      if (!move_uploaded_file($tmpFile, $uploadFile)) {
-        throw new Exception();
-      }
-
       $headers = [
           'Prediction-Key' => $this->predictionKey,
           'Content-Type'   => 'multipart/form-data'
