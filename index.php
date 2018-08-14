@@ -1,23 +1,33 @@
 <?php
 
-require_once __DIR__ . '/Upload/File.php';
-require_once 'imageRecognition.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/src/Upload/File.php';
+require_once __DIR__ . '/src/imageRecognition.php';
 
 use Upload\File;
+use Dotenv\Dotenv;
 
 if (isset($_POST['submit'])) {
-  $file = new File('files', __DIR__ . '/Upload/Files/');
+  $file = new File('files', __DIR__ . '/src/Upload/Files/');
   
   // 画像認識対象データ
   $data = [
+    'fieldName'  => 'files',
     'localName'  => $file->getLocalName(),
     'fileName'   => $file->getName(),
     'mimeType'   => $file->getMimeType()
   ];
 
+  $env = new Dotenv(__DIR__);
+  $env->load();
   $imageRecognition = new imageRecognition();
+
+  $imageRecognition->setPredictionKey(getenv('PredictionKey'));
+  $imageRecognition->setIterationId(getenv('iterationId'));
+
   // 画像認識判定
-  $result = $imageRecognition->determineRecognition();
+  $result = $imageRecognition->determineRecognition($data);
+
 }
 
 ?>
