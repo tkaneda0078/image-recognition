@@ -1,19 +1,15 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
 require_once 'HTTP/Request2.php';
 
+
 /**
- * 画像認識
+ * Custom Vision Service 画像認証
+ *
  * Class imageRecognition
  */
 class imageRecognition
 {
-  /**
-   * @var \Dotenv\Dotenv
-   */
-  private $dotenv;
-
   /**
    * @var HTTP_Request2
    */
@@ -29,33 +25,81 @@ class imageRecognition
    */
   private $iterationId;
 
+  /**
+   * @var string
+   */
+  private $baseUrl = 'https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d';
 
+
+  /**
+   * Constructor
+   *
+   */
   public function __construct()
   {
     $this->request = new HTTP_Request2();
-    $this->dotenv = new Dotenv\Dotenv(__DIR__);
-    $this->dotenv->load();
-    $this->predictionKey = getenv('PredictionKey');
-    $this->iterationId = getenv('iterationId');
   }
 
   /**
-   * 認識判定
+   * set Prediction key
+   *
+   * @param $predictionKey
    */
-  public function determineRecognition()
+  public function setPredictionKey($predictionKey)
+  {
+    $this->predictionKey = $predictionKey;
+  }
+
+  /**
+   * Prediction key
+   *
+   * @return string
+   */
+  public function getPredictionKey()
+  {
+    return $this->predictionKey;
+  }
+
+  /**
+   * set Iteration id
+   *
+   * @param $iterationId
+   */
+  public function setIterationId($iterationId)
+  {
+    $this->iterationId = $iterationId;
+  }
+
+  /**
+   * Iteration id
+   *
+   * @return string
+   */
+  public function getIterationId()
+  {
+    return $this->iterationId;
+  }
+
+  /**
+   * 画像認識判定
+   *
+   * @param array $file  upload file
+   * @return array $data
+   */
+  public function determineRecognition($file)
   {
     try {
       $headers = [
-          'Prediction-Key' => $this->predictionKey,
+          'Prediction-Key' => $this->getPredictionKey(),
           'Content-Type'   => 'multipart/form-data'
       ];
 
-      $url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d/image?iterationId={$this->iterationId}";
+      $url = $this->baseUrl . "/image?iterationId={$this->getIterationId()}";
 
       $this->request->setHeader($headers);
       $this->request->setUrl($url);
       $this->request->setMethod(HTTP_Request2::METHOD_POST);
-      $this->request->addUpload('files', $uploadFile, $fileName, $fileType);
+      $this->request->addUpload($file['fieldName'], $file['localName'], $file['fileName'], $file['mimeType']);
 
       $response = $this->request->send();
       $data = json_decode($response->getBody(), true);
@@ -63,12 +107,16 @@ class imageRecognition
       return $this->formatData($data);
 
     } catch (Exception $e) {
+      // todo log
       echo $e->getMessage();
     }
   }
 
   /**
    * データを整形する
+   *
+   * @param array $data
+   * @return array $tagData
    */
   private function formatData($data)
   {
@@ -85,5 +133,3 @@ class imageRecognition
   }
 
 }
-
-?>
