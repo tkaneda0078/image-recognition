@@ -35,17 +35,32 @@ class File
    */
   public function __construct($fieldName, $storage)
   {
-    $this->tmpName = $_FILES[$fieldName]['tmp_name'];
-    if (!is_uploaded_file($this->tmpName)) {
-      throw new \Exception('');
-    }
+    try {
+      $this->tmpName = $_FILES[$fieldName]['tmp_name'];
+      if (!is_uploaded_file($this->tmpName)) {
+        // todo msg
+        throw new \Exception('');
+      }
+      
+      if (!file_exists($storage)) {
+        if (!mkdir($storage)) {
+          // todo msg
+          throw new \Exception('');
+        }
+        chmod($storage, 0777);
+      }
 
-    $this->name = basename($_FILES[$fieldName]['name']);
-    $this->mimeType = $_FILES[$fieldName]['type'];
+      $this->name = uniqid() . basename($_FILES[$fieldName]['name']);
+      $this->mimeType = $_FILES[$fieldName]['type'];
 
-    $this->localName = $storage . $this->name;
-    if (!move_uploaded_file($this->tmpName, $this->localName)) {
-      throw new \Exception('');
+      $this->localName = $storage . $this->name;
+      if (!move_uploaded_file($this->tmpName, $this->localName)) {
+        // todo msg
+        throw new \Exception('');
+      }
+    } catch (\Exception $e) {
+      // todo log
+      echo $e->getMessage();
     }
   }
 
