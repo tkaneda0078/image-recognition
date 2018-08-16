@@ -20,8 +20,8 @@ if (isset($_POST['submit'])) {
 
   $env = new Dotenv(__DIR__);
   $env->load();
+  
   $imageRecognition = new imageRecognition();
-
   $imageRecognition->setPredictionKey(getenv('PredictionKey'));
   $imageRecognition->setIterationId(getenv('iterationId'));
 

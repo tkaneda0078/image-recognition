@@ -2,7 +2,6 @@
 
 require_once 'HTTP/Request2.php';
 
-
 /**
  * Custom Vision Service 画像認証
  *
@@ -10,10 +9,7 @@ require_once 'HTTP/Request2.php';
  */
 class imageRecognition
 {
-  /**
-   * @var HTTP_Request2
-   */
-  private $request;
+  const BASE_URL = 'https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d';
 
   /**
    * prediction key
@@ -26,19 +22,10 @@ class imageRecognition
   private $iterationId;
 
   /**
-   * @var string
-   */
-  private $baseUrl = 'https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Prediction/1277e459-4ccf-40ea-ac1c-49dc3b6a988d';
-
-
-  /**
    * Constructor
    *
    */
-  public function __construct()
-  {
-    $this->request = new HTTP_Request2();
-  }
+  public function __construct() {}
 
   /**
    * set Prediction key
@@ -94,14 +81,15 @@ class imageRecognition
           'Content-Type'   => 'multipart/form-data'
       ];
 
-      $url = $this->baseUrl . "/image?iterationId={$this->getIterationId()}";
+      $url = BASE_URL . "/image?iterationId={$this->getIterationId()}";
 
-      $this->request->setHeader($headers);
-      $this->request->setUrl($url);
-      $this->request->setMethod(HTTP_Request2::METHOD_POST);
-      $this->request->addUpload($file['fieldName'], $file['localName'], $file['fileName'], $file['mimeType']);
+      $request = new HTTP_Request2();
+      $request->setHeader($headers)
+              ->setUrl($url)
+              ->setMethod(HTTP_Request2::METHOD_POST)
+              ->addUpload($file['fieldName'], $file['localName'], $file['fileName'], $file['mimeType']);
 
-      $response = $this->request->send();
+      $response = $request->send();
       $data = json_decode($response->getBody(), true);
 
       return $this->formatData($data);
